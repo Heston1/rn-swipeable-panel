@@ -58,6 +58,7 @@ type SwipeablePanelState = {
   deviceWidth: number;
   deviceHeight: number;
   panelHeight: number;
+  newY: number;
 };
 
 class SwipeablePanel extends Component<SwipeablePanelProps, SwipeablePanelState> {
@@ -78,6 +79,7 @@ class SwipeablePanel extends Component<SwipeablePanelProps, SwipeablePanelState>
       deviceWidth: FULL_WIDTH,
       deviceHeight: FULL_HEIGHT,
       panelHeight: PANEL_HEIGHT,
+      newY: 0
     };
 
     this.pan = new Animated.ValueXY({ x: 0, y: FULL_HEIGHT });
@@ -196,7 +198,7 @@ class SwipeablePanel extends Component<SwipeablePanelProps, SwipeablePanelState>
         this.setState({
           showComponent: false,
         });
-      } else this.setState({ canScroll: newStatus === STATUS.LARGE ? true : false });
+      } else this.setState({ canScroll: newStatus === STATUS.LARGE ? true : false, newY });
     });
   };
 
@@ -240,39 +242,22 @@ class SwipeablePanel extends Component<SwipeablePanelProps, SwipeablePanelState>
           </TouchableWithoutFeedback>
         )}
         <Animated.View
-          style={[
+            style={[
             SwipeablePanelStyles.panel,
             {
-              width: this.props.fullWidth ? deviceWidth : deviceWidth - 50,
-              height: panelHeight,
+                width: this.props.fullWidth ? deviceWidth : deviceWidth - 50,
             },
             { transform: this.state.pan.getTranslateTransform() },
             style,
-          ]}
-          {...this._panResponder.panHandlers}
+            ]}
         >
-          {!this.props.noBar && <Bar barStyle={barStyle} barContainerStyle={barContainerStyle} />}
-          {this.props.showCloseButton && (
-            <Close rootStyle={closeRootStyle} iconStyle={closeIconStyle} onPress={this.props.onClose} />
-          )}
-          <ScrollView
-            onTouchStart={() => {
-              return false;
-            }}
-            onTouchEnd={() => {
-              return false;
-            }}
-            contentContainerStyle={SwipeablePanelStyles.scrollViewContentContainerStyle}
-            {...this.props.scrollViewProps}
-          >
-            {this.state.canScroll ? (
-              <TouchableHighlight>
-                <React.Fragment>{this.props.children}</React.Fragment>
-              </TouchableHighlight>
-            ) : (
-              this.props.children
+            <Animated.View {...this._panResponder.panHandlers}>
+            {!this.props.noBar && <Bar barStyle={barStyle} barContainerStyle={barContainerStyle}  />}
+            {this.props.showCloseButton && (
+                <Close rootStyle={closeRootStyle} iconStyle={closeIconStyle} onPress={this.props.onClose} />
             )}
-          </ScrollView>
+            </Animated.View>
+            <View style={{height: panelHeight-newY}}>{this.props.children}</View>
         </Animated.View>
       </Animated.View>
     ) : null;
